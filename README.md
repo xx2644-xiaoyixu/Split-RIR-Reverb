@@ -45,7 +45,7 @@ Implemented a classic **Schroeder reverberator**:
 - 4 parallel comb filters  (with LPF inside)
 - 2 serial allpass filters  
 
-**How late IR affects reverb tail?**
+**How late IR affects the reverb tail?**
 1. Compute **Energy Decay Curve (EDC)** and estimate remaining **RT60** (estimated, not real RT60) by late impulse response using schroeder's method. **Estimated RT60** is used for compute **feedback gain** for IIR Comb filter to control tail decay.
 2. Filters late IR by LPF with cutoff freq 1000Hz and HPF with cutoff freq 2000Hz, to get low-pass late IR and high-pass late IR. And use them to compute **damping** coefficient for LPF.
 3. Late IR mainly affects coefficients in Comb filter rather than Allpass filter, because allpass filters are used for diffusion, and I want it to be more adjustable so that I can adjust listening experience by myself.
@@ -62,9 +62,9 @@ Implemented a classic **Schroeder reverberator**:
 
 ## Results
 ### Measured Processing Time
-Method	Time (s)：  
-Hybrid (Early + Tail）：0.0017  
-Full Convolution：0.0325  
+Approximate Processing Time each block：  
+Hybrid (Early + Tail）：1.7 ms  
+Full Convolution (FFT)：32.5 ms
 
  ~19x speed improvement
 ### Latency Constraint
@@ -79,11 +79,11 @@ latency ≈ 5.8 ms
 Depends on the mix gain of early and tail, and the length of early IR. From my perspective, the hybird version "sig_hybird_reverb.wav" is close to fully-conv version "sig_full_conv.wav".
 
 ## Possible Improvements
-- Can be implemented with partitioned convolution.
+- Need to be implemented with partitioned convolution in real-time environment with high efficiency requirements.
 - Can have multi-channel version if needed.
 - Can be more Frequency-dependent (apply on diff freq bands).
 - GPU / SIMD optimization
-- More accurate RT60 estimation.
+- More accurate RT60 estimation, but it's a trade-off between computation cost and accuracy.
 
 ## Reference
 Schroeder, M. (1962). Natural sounding artificial reverberation. J. Audio Eng. Soc., 10.  
