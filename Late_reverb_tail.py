@@ -1,7 +1,6 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-from scipy.signal import correlate
 
 def normalization(x):
     peak = np.max(np.abs(x))
