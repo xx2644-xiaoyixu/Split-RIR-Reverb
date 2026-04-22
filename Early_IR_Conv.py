@@ -49,10 +49,7 @@ def stereo_stack(x_L, x_R):
 
 def normalization(x):
     peak = np.max(np.abs(x))
-    if peak <= 0.99:
-        y = x
-    else:
-        y = x * (0.99 / peak)
+    y = x * (0.99 / peak)
     return y
 
 # ===================================================
