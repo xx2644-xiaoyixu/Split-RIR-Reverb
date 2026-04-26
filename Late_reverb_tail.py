@@ -267,18 +267,31 @@ def stereo_width(ir_L, ir_R, eps=1e-12):
         Stereo width in [0, 1].
     """
     N = min(len(ir_L), len(ir_R))
-    ir_L = ir_L[:N]
-    ir_R = ir_R[:N]
+    L = ir_L[:N]
+    R = ir_R[:N]
 
-    M = 0.5 * (ir_L + ir_R)
-    S = 0.5 * (ir_L - ir_R)
+    # energy
+    E_L = np.sum(L**2)
+    E_R = np.sum(R**2)
+
+    # balance: -1 = left, 0 = center, +1 = right
+    balance = (E_R - E_L) / (E_L + E_R + eps)
+
+    # mid-side
+    M = 0.5 * (L + R)
+    S = 0.5 * (L - R)
 
     E_M = np.sum(M**2)
     E_S = np.sum(S**2)
 
-    width = E_S / (E_M + E_S + eps)
+    raw_width = E_S / (E_M + E_S + eps)
 
-    return width
+    # penalize strong left/right imbalance
+    centeredness = 1 - abs(balance)
+
+    width_centered = raw_width * centeredness
+
+    return width_centered
 
 # =========================
 # Main processing loop
@@ -529,7 +542,7 @@ def trim_leading_silence_stereo(x, threshold=1e-6):
     return x[:, start_idx:]
     
 # mixing early reflection and reverb tail
-def mix(t0_L, t0_R, early, tail, fs, early_gain=0.5, tail_gain=0.5, threshold=1e-6):
+def mix(t0_L, t0_R, early, tail, fs, ratio_L, ratio_R, threshold=1e-6, eps=1e-12):
 
     tail_cut = trim_leading_silence_stereo(tail, threshold=threshold)
 
@@ -538,7 +551,22 @@ def mix(t0_L, t0_R, early, tail, fs, early_gain=0.5, tail_gain=0.5, threshold=1e
     early_p  = np.pad(early, ((0, 0), (0, N - early.shape[1])))
     tail_p   = np.pad(tail_cut, ((0, 0), (0, N - tail_cut.shape[1])))
 
-    y = early_gain * early_p + tail_gain * tail_p
+    E_early_p_L = np.sum(early_p[0] ** 2)
+    E_early_p_R = np.sum(early_p[1] ** 2)
+    E_tail_p_L = np.sum(tail_p[0] ** 2)
+    E_tail_p_R = np.sum(tail_p[1] ** 2)
+
+    # np.sqrt is to convert energy-domain to amplitude gain
+    g_early_L = np.sqrt(ratio_L / (E_early_p_L + eps))
+    g_tail_L  = np.sqrt((1 - ratio_L) / (E_tail_p_L + eps))
+    g_early_R = np.sqrt(ratio_R / (E_early_p_R + eps))
+    g_tail_R  = np.sqrt((1 - ratio_R) / (E_tail_p_R + eps))
+
+    print([g_early_L, g_tail_L], [g_early_R, g_tail_R])
+    
+    y_L = g_early_L * early_p[0] + g_tail_L * tail_p[0]
+    y_R = g_early_R * early_p[1] + g_tail_R * tail_p[1]
+    y = np.stack([y_L, y_R], axis=0)
 
     # add arrival time of direct sound at the beginning
     predelay_L = np.zeros(int(t0_L * fs))

@@ -133,7 +133,7 @@ def estimate_t0(x, fs, win=32, noise_ms=3.0, k=6.0):
 
     return t0
 
-def estimate_ER_time(x, fs, t0, win_ms=30, hop_ms=3):
+def estimate_ER_time(x, fs, t0, win_ms=30, hop_ms=3, alpha=0.1):
     '''
     Estimate the time of early reflection (excludes direction sound) using sliding window kurtosis method.
 
@@ -181,20 +181,20 @@ def estimate_ER_time(x, fs, t0, win_ms=30, hop_ms=3):
         t[i] = ((i + win_len) // 2) / fs
 
     # exp moving average for smoothness. lower alpha leads to soomther curve
-    def exp_moving_average(x, alpha=0.2):
+    def exp_moving_average(x, alpha):
         y = np.zeros_like(x)
         y[0] = x[0]
         for i in range(1, len(x)):
             y[i] = alpha * x[i] + (1 - alpha) * y[i-1]
         return y
 
-    kurt_smooth = exp_moving_average(kurt, alpha=0.2)
+    kurt_smooth = exp_moving_average(kurt, alpha=alpha)
 
     # using the sharpest transition as split point
     slope = np.diff(kurt_smooth)
     idx_1 = np.argmin(slope) # cuz slope is negative
 
-    t_early_1 = t[idx_1 + 25] # plus 10 is for avoiding losing edge
+    t_early_1 = t[min(idx_1 + 25, len(t) - 1)] # plus 10 is for avoiding losing edge
 
     # using the first point when kurt curve approaches min threshold
     # use the last 20% of kurt curve as basic noise
@@ -204,11 +204,11 @@ def estimate_ER_time(x, fs, t0, win_ms=30, hop_ms=3):
     threshold = k_base + 1.5 * k_std
 
     idx_2 = np.where(kurt_smooth < threshold)[0][0]
-    t_early_2 = t[idx_2 + 25]
+    t_early_2 = t[min(idx_1 + 25, len(t) - 1)]
 
     t_early = min(t_early_1, t_early_2)
     # final split time, add 20ms to keep more transition.
-    t_split = t_early + t0 + 20 * 1e-3
+    t_split = t_early + t0 + 25 * 1e-3
         
     return t, kurt_smooth, t_early, t_split
 
@@ -254,6 +254,29 @@ def split(time_direct, time_split, fade_time, h, fs):
             late[:fade_len]   *= fade_in[:, None]
     
     return early, late
+
+def energy_ratio(ir_early, ir_late, eps=1e-12):
+    """
+    Compute energy ratio between early and late IR
+    
+    Parameters:
+        ir_early: np.ndarray
+        ir_late:  np.ndarray
+        eps: small value to avoid division by zero
+        db: whether to return result in dB
+    
+    Returns:
+        ratio: linear or dB
+    """
+    
+    # energy
+    E_early = np.sum(ir_early ** 2)
+    E_late  = np.sum(ir_late ** 2)
+    E_full = E_early + E_late
+    
+    early_ratio = E_early / (E_full + eps)
+    
+    return early_ratio
 
 # =================================================================
 # Convolution

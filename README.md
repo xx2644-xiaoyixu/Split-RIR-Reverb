@@ -102,7 +102,7 @@ This parameter is then passed into the low-pass damping module `LPF_Damping` in 
 
 #### 4.3 Stereo Width Estimation `stereo_width()`
 
-The code estimates the stereo width of the original IR using the mid-side energy ratio, and uses it to determine the complexity of the late reverb network:
+The code estimates the stereo width of the original IR using the mid-side energy ratio, removing the impact of offsets of stereo imaging and uses it to determine the complexity of the late reverb network:
 
 - When `width > 0.3`, extra APFs are enabled in the tank.
 - When `width > 0.6`, extra delay lines are added.
@@ -137,7 +137,7 @@ The final output is not obtained by direct summation. The code also includes sev
 
 - Remove the silence at the beginning of the tail with `trim_leading_silence_stereo()` to avoid an obvious echo impression.
 - Pad the early and tail signals to the same length.
-- Mix them with adjustable `early_gain` and `tail_gain`.
+- Mix them to the target gain ratio of square-rooted energy ratio of direct + early IR and late IR each channel.
 - Add the direct-sound arrival times `t0_L` and `t0_R` back as predelay for the left and right channels.
 - Normalize the final output.
 
@@ -159,7 +159,7 @@ From this:
 - The theoretical block duration / latency is about `256 / 44100 = 0.005805 s`
 - Hybrid processing time per block is about `0.004325 s`
 - Full convolution processing time per block is about `0.109090 s`
-- The **speed-up** is about `25.22x`
+- The **speed-up** is about `25.22x`(And `5xx` ~ `30xx` over all samples)
 
 ### Real-Time Interpretation
 
@@ -179,7 +179,7 @@ When the decay curve shows **multi-slope decay behavior**, a simple **linear fit
 
 ### Subjective Listening
 
-Example files:
+Example files in audio file:
 
 - `sig_hybird_reverb_long.wav`
 - `sig_full_conv_long.wav`
@@ -213,4 +213,5 @@ The notebook and scripts currently depend on:
 
 - Schroeder, M. R. (1962). Natural sounding artificial reverberation. Journal of the Audio Engineering Society, 10.
 - Schroeder, M. R. (1965). New Method of Measuring Reverberation Time. The Journal of the Acoustical Society of America, 37(6 Supplement), 1187-1188. https://doi.org/10.1121/1.1939454
+- Dattorro, Jon; 1997; Effect Design, Part 1: Reverberator and Other Filters [PDF]; CCRMA, Stanford University, Stanford, CA; Paper ; Available from: https://aes.org/publications/elibrary-page/?id=10160
 - Stewart, R., & Sandler, M. (2007). STATISTICAL MEASURES OF EARLY REFLECTIONS OF ROOM IMPULSE RESPONSES.
