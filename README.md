@@ -111,7 +111,7 @@ The code estimates the stereo width of the original IR using the mid-side energy
 
 The late tail is designed so that the temporal decay, frequency decay, and stereo width of the late IR are all mapped into the parameters of the algorithmic network.
 
-![FDNTANK](Docs/FDN.png)
+![FDNTANK](docs/FDN.png)
 
 Its structure can be summarized as:
 
