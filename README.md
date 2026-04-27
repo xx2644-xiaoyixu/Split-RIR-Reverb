@@ -18,8 +18,8 @@ Traditional long-IR convolution is highly realistic acoustically, but when the I
 The current example in `Split_Full_RIR.ipynb` uses:
 
 - Dry input: `a-minor-dance-piano~2.wav`
-- Long-IR example: `base_44_hemiaux_center_sck_023.wav`
-- Short-IR example: `BRIR_R09_C1_E0_A0.wav` (the notebook keeps the switching code commented out)
+- Long-IR example: `base_44_hemiaux_center_sck_023.wav` and more.
+- Short-IR example: `BRIR_R09_C1_E0_A0.wav` (the notebook keeps the switching code commented out) and more.
 
 The whole system runs at `Fs = 44100` Hz. If the original signal has a different sample rate, the `resample()` function in `Early_IR_Conv.py` uses `scipy.signal.resample_poly` to resample it to the system sample rate.
 
@@ -123,14 +123,6 @@ Its structure can be summarized as:
 `g = 10 ** ((-3.0 * n) / (esti_rt60 * fs))`
 6. Left and right outputs formed by branch pairing based on sorted gains
 
-**Two One-pole Lowpass Filters**  
-![LPF](Docs/LPF.png)
-
-**(Modulated) IIR Allpass Filter**  
-![APF](Docs/APF.png)
-
-**Modulator**: a sine wave with **adjustable frequency and amplitude** using a sine-table lookup method, which leads to a delay line that is interpolated with linear interpolation.
-
 ### 5. Mixing and Final Output `mix()`
 
 The final output is not obtained by direct summation. The code also includes several perceptually important steps:
@@ -145,7 +137,7 @@ The final output is not obtained by direct summation. The code also includes sev
 
 ### Processing Time
 
-Under the settings `Fs = 44100` and `block_size = 256`, the notebook records the following results:
+Under the settings `Fs = 44100` and `block_size = 256`, the notebook records the following results for one of long example:
 
 | Method | Average time per block |
 | --- | ---: |
