@@ -207,3 +207,5 @@ The notebook and scripts currently depend on:
 - Schroeder, M. R. (1965). New Method of Measuring Reverberation Time. The Journal of the Acoustical Society of America, 37(6 Supplement), 1187-1188. https://doi.org/10.1121/1.1939454
 - Dattorro, Jon; 1997; Effect Design, Part 1: Reverberator and Other Filters [PDF]; CCRMA, Stanford University, Stanford, CA; Paper ; Available from: https://aes.org/publications/elibrary-page/?id=10160
 - Stewart, R., & Sandler, M. (2007). STATISTICAL MEASURES OF EARLY REFLECTIONS OF ROOM IMPULSE RESPONSES.
+
+For more detailed information and literature review about the projects, please read the **report paper in docs**.
